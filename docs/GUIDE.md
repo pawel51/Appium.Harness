@@ -14,7 +14,6 @@ need them to finish this one.
 |---|---|
 | **Time** | ~45 minutes, most of it waiting for builds |
 | **You need** | a macOS, Windows or Linux machine and a .NET MAUI app you can build |
-| **Worked example** | [`tests/AlohaAI.Tests.E2E`](https://github.com/pawel51/AlohaAI/blob/main/tests/AlohaAI.Tests.E2E) in the AlohaAI repo |
 
 **Contents** — [1. What you are building](#1-what-you-are-building) ·
 [2. Concepts](#2-concepts-worth-five-minutes) · [3. Prerequisites](#3-prerequisites) ·
@@ -198,8 +197,6 @@ compiled into both.
    dotnet build tests/MyApp.Tests.E2E/Android
    ```
 
-> Worked example: [`AlohaAI.Tests.E2E.Android.csproj`](https://github.com/pawel51/AlohaAI/blob/main/tests/AlohaAI.Tests.E2E/Android/AlohaAI.Tests.E2E.Android.csproj)
-
 ---
 
 ## 5. Make the app testable
@@ -248,9 +245,8 @@ Tests can only find what the app exposes.
    [Appium Inspector](https://github.com/appium/appium-inspector), or after your first test run
    read the id list any failure prints.
 
-> Worked example: [`AutomationIds.cs`](https://github.com/pawel51/AlohaAI/blob/main/src/AlohaAI.Core/Automation/AutomationIds.cs), plus
-> [`AutomationIdContractTests`](https://github.com/pawel51/AlohaAI/blob/main/tests/AlohaAI.Tests.Unit) which enforces the conventions in
-> the unit suite — a one-second gate instead of a three-minute one.
+> **Enforce the conventions in a unit test** — one that reflects over the id class and checks
+> every id is unique and well-formed is a one-second gate instead of a three-minute one.
 
 ---
 
@@ -297,9 +293,6 @@ One `AppiumSetup` per platform project. This is the only file that differs betwe
    Use an **absolute** `APPIUM_APP`. A relative path resolves against the test host's working
    directory — the build output, not your project — so a sensible-looking `../../../src/...`
    silently resolves inside `bin/`.
-
-> Worked examples: [Android](https://github.com/pawel51/AlohaAI/blob/main/tests/AlohaAI.Tests.E2E/Android/AppiumSetup.cs) ·
-> [iOS](https://github.com/pawel51/AlohaAI/blob/main/tests/AlohaAI.Tests.E2E/iOS/AppiumSetup.cs)
 
 ---
 
@@ -358,8 +351,6 @@ One base class in `Shared/`, holding the NUnit plumbing and nothing else.
    empty a database. Skipping this produces failures that only appear in one test ordering — among
    the most expensive bugs to chase. ⚠ [Risks](#risks)
 
-> Worked example: [`BaseTest.cs`](https://github.com/pawel51/AlohaAI/blob/main/tests/AlohaAI.Tests.E2E/Shared/BaseTest.cs)
-
 ---
 
 ## 8. Write a page object
@@ -402,8 +393,6 @@ A facade that knows your app. Tests speak in app vocabulary; the page object own
      long (slow), and usually both on different machines.
 
 3. **Expose a `CurrentPage`-style property.** Every failure message gets better for free.
-
-> Worked example: [`AlohaAiApp.cs`](https://github.com/pawel51/AlohaAI/blob/main/tests/AlohaAI.Tests.E2E/Shared/AlohaAiApp.cs)
 
 ---
 
@@ -514,12 +503,14 @@ Work down this list. Most first-run failures are in the first three.
 
 ## 11. Next steps
 
-Platform setup — SDKs, emulators, build artifacts, capabilities:
+Platform setup — SDKs, emulators, capabilities — is the drivers' own documentation:
 
-- **[Android E2E guide](https://github.com/pawel51/AlohaAI/blob/main/tests/AlohaAI.Tests.E2E/Android/README.md)**
-- **[iOS E2E guide](https://github.com/pawel51/AlohaAI/blob/main/tests/AlohaAI.Tests.E2E/iOS/README.md)**
+- **[UiAutomator2 driver (Android)](https://github.com/appium/appium-uiautomator2-driver)**
+- **[XCUITest driver (iOS)](https://appium.github.io/appium-xcuitest-driver/latest/)**
 
-If your app embeds a WebView, each platform guide hands off to its WebView guide.
+If your app embeds a WebView, see
+[the README](https://github.com/pawel51/Appium.Harness/blob/main/README.md#webviewcontext--the-seam)
+for what the app must do before a test can enter it.
 
 Further reading: [Appium documentation](https://appium.io/docs/en/latest/) ·
 [W3C WebDriver spec](https://www.w3.org/TR/webdriver/) ·

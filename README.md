@@ -81,9 +81,7 @@ passes on one platform and silently inverts on the other:
 `Driver.Navigate().Back()`, which presses Android's hardware key. **iOS has no such key: XCUITest
 accepts the command, does nothing, and reports success.** It is left as-is because there is no
 generic iOS equivalent — a page that hides the system navigation bar must be left through its own
-back control. Page objects own that knowledge; see
-[`AlohaAiApp.LeaveCurrentPushedPage`](https://github.com/pawel51/AlohaAI/blob/main/tests/AlohaAI.Tests.E2E/Shared/AlohaAiApp.cs) for the
-worked version. ⚠ [Risks](#risks)
+back control. Page objects own that knowledge. ⚠ [Risks](#risks)
 
 ### API
 
@@ -141,8 +139,16 @@ whatever runs next, never a reason to mask the real failure.
 **If no webview context ever appears, the cause is almost never Appium.** It is that the app has
 no *inspectable* WebView — no DevTools socket to attach to. The exception names the contexts that
 *were* available, so the message says that rather than "no such element". Fixing it is an app
-build concern: see [Android](https://github.com/pawel51/AlohaAI/blob/main/tests/AlohaAI.Tests.E2E/Android/WEBVIEW.md) or
-[iOS](https://github.com/pawel51/AlohaAI/blob/main/tests/AlohaAI.Tests.E2E/iOS/WEBVIEW.md).
+build concern, and only for test builds — an inspectable WebView is a debugging channel into the app:
+
+- **Android** — call `Android.Webkit.WebView.SetWebContentsDebuggingEnabled(true)` before any
+  WebView is created (`MainActivity.OnCreate`). Start the Appium server with
+  `--allow-insecure=uiautomator2:chromedriver_autodownload` and set the `chromedriverAutodownload`
+  capability, so it can fetch a chromedriver matching the device's WebView. Check with
+  `chrome://inspect/#devices`.
+- **iOS 16.4+** — set `WKWebView.Inspectable = true`, in MAUI through
+  `WebViewHandler.Mapper.AppendToMapping(...)` with an `OperatingSystem.IsIOSVersionAtLeast(16, 4)`
+  guard. Check with Safari ▸ Develop ▸ Simulator.
 
 ---
 
@@ -258,7 +264,7 @@ The two layers get them differently, and that is the one thing worth understandi
   Nothing to set up.
 - **Native** — an accessibility tree carries text, ids and state flags, and **not** a MAUI `Color` or
   anything from a view model. The app must publish what a test wants to read. In the sample app that is
-  [`TestProbe`](https://github.com/pawel51/AlohaAI/blob/main/src/AlohaAI/Infrastructure/TestProbe.cs), an attached property pair that folds the
+  `TestProbe`, an attached property pair that folds the
   chosen values into a `[[probe:Name=value;…]]` payload (`ProbePayload`) in the platform's
   accessibility field — Android `contentDescription`, iOS `accessibilityValue` — and the harness reads
   it back.
@@ -473,8 +479,7 @@ dotnet test  Appium.Harness.sln
 ```
 
 No device, emulator or Appium server is needed: the tests run against faked drivers. Device-level
-coverage lives with the app that uses the harness — the sample app's
-[E2E suite](https://github.com/pawel51/AlohaAI/blob/main/tests/AlohaAI.Tests.E2E).
+coverage lives with the app that uses the harness, in its own E2E suite.
 
 ### Packing and publishing
 

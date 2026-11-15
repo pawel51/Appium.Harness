@@ -253,7 +253,7 @@ Screenshot: $TMPDIR/appium-harness-failures/expect-failed-'profile-total-xp'.png
 An element that is absent, or a colour or property the app never published, satisfies neither
 polarity of a value check (there is nothing to assert about it), so `Not.HasText(...)` on a missing
 element and `Not.HasTextColor(...)` on an unpublished colour fail rather than passing for the wrong
-reason. A typo'd property name, or a build with `TestProbe` compiled out, is therefore loud.
+reason. A typo'd property name, or a build that never enabled `TestProbe`, is therefore loud.
 
 ### Where colours and properties come from
 
@@ -263,8 +263,9 @@ The two layers get them differently, and that is the one thing worth understandi
   sees after the stylesheet and inheritance), and properties are `data-*` attributes or DOM properties.
   Nothing to set up.
 - **Native** — an accessibility tree carries text, ids and state flags, and **not** a MAUI `Color` or
-  anything from a view model. The app must publish what a test wants to read. In the sample app that is
-  `TestProbe`, an attached property pair that folds the
+  anything from a view model. The app must publish what a test wants to read. For a MAUI app that is
+  `TestProbe`, from the companion package
+  [**Appium.Harness.Maui**](https://github.com/pawel51/Appium.Harness/blob/main/src/Appium.Harness.Maui/README.md): an attached property pair that folds the
   chosen values into a `[[probe:Name=value;…]]` payload (`ProbePayload`) in the platform's
   accessibility field — Android `contentDescription`, iOS `accessibilityValue` — and the harness reads
   it back.
@@ -275,18 +276,20 @@ The two layers get them differently, and that is the one thing worth understandi
        probe:TestProbe.Value="{Binding TotalXp}" />
 ```
 
-The payload format lives in one file, [`Probing/ProbePayload.cs`](https://github.com/pawel51/Appium.Harness/blob/main/src/Appium.Harness/Probing/ProbePayload.cs), which the app **link-compiles** rather than
-referencing the harness — the app must not take `Appium.WebDriver` as a dependency, and sharing the
-source is what stops the writer and the reader drifting apart. An app that adopts this copies the
-idea, not the repo's wiring: publish whatever your tree can carry, and implement `PropertyOf` over it.
+The app references **Appium.Harness.Maui**, not this package: an app must not take
+`Appium.WebDriver` as a dependency. Both packages compile the same source file,
+[`Probing/ProbePayload.cs`](https://github.com/pawel51/Appium.Harness/blob/main/src/Appium.Harness/Probing/ProbePayload.cs),
+which is what stops the writer and the reader drifting apart. A non-MAUI app can link-compile that
+file and publish the payload however its UI framework allows.
 
 ### Test builds only
 
-The sample app's `TestProbe` compiles to nothing unless `DEBUG` or `ALOHA_WEB_INSPECTABLE` is defined — the same gate
-as the inspectable WebView, for the same reason: a shipping build must expose no test surface. The
-attached properties still exist in a shipping build so the XAML compiles; they publish nothing. A
-colour or `HasProperty` check against a Release build therefore fails with `<not published>`, which
-is the correct answer.
+`TestProbe` publishes nothing until the app calls `builder.UseTestProbes()`, which it does inside
+its own test-build `#if` — the same gate as an inspectable WebView, for the same reason: a shipping
+build must expose no test surface. The attached properties still exist in a shipping build so the
+XAML compiles; they publish nothing. A colour or `HasProperty` check against such a build therefore
+fails with `<not published>`, which is the correct answer. Setup is in the
+[Appium.Harness.Maui README](https://github.com/pawel51/Appium.Harness/blob/main/src/Appium.Harness.Maui/README.md).
 
 Do not put a probe on a control whose iOS accessibility *value* a test already reads (`Switch`,
 `Entry`): that is the field it uses there.
@@ -445,7 +448,7 @@ Targets `net8.0` and `net10.0`. Proven against Appium **3.6.0**,
 | `AdditionalCapabilities` | An unchecked passthrough to Appium. Capabilities can make the server download and run executables or relax device security | Nothing is added implicitly; you write every entry. Review them like code, and see the platform guides for the ones this repo sets |
 | `Back()` on iOS | Reports success and does nothing, so an unwind loop can spin believing it is progressing and fail later somewhere unrelated | Documented above; leave pushed pages through the app's own back control |
 | Asserting once instead of waiting | A single read-and-compare races the render, so a test passes or fails on machine speed | Use `Expect` / `ExpectCount`, which poll until the condition holds; keep timeouts bounded |
-| A probe in a shipping build | A published payload exposes colours and view-model values to anything that reads the accessibility tree | Gate the app's probe behind a test-only build constant, as the sample app does (`DEBUG` or `ALOHA_WEB_INSPECTABLE`); never ship a build with it on |
+| A probe in a shipping build | A published payload exposes colours and view-model values to anything that reads the accessibility tree | Call `UseTestProbes()` only inside a test-build `#if`; never ship a build that calls it |
 | Counting a long list without `scroll: true` | Only rendered rows are in the tree, so the count stops at about a screenful and a real regression can hide behind it | Pass `scroll: true`, with a row id per item |
 | `RestartApp()` | A process restart, **not** a data wipe — state in a server or a shared database survives it | Reset that state explicitly; do not treat a restart as isolation |
 
@@ -484,13 +487,17 @@ coverage lives with the app that uses the harness, in its own E2E suite.
 ### Packing and publishing
 
 ```sh
-dotnet pack src/Appium.Harness -c Release -o artifacts
-dotnet nuget push "artifacts/Appium.Harness.*.nupkg" --source https://api.nuget.org/v3/index.json --api-key <key>
+dotnet pack src/Appium.Harness      -c Release -o artifacts
+dotnet pack src/Appium.Harness.Maui -c Release -o artifacts   # needs the maui workloads
+dotnet nuget push artifacts/Appium.Harness.<version>.nupkg --source https://api.nuget.org/v3/index.json --api-key <key>
 ```
 
-The `.snupkg` symbol package is produced alongside and pushed with it. Bump `<Version>` in
-[`Appium.Harness.csproj`](https://github.com/pawel51/Appium.Harness/blob/main/src/Appium.Harness/Appium.Harness.csproj) and add an entry to
-[`CHANGELOG.md`](https://github.com/pawel51/Appium.Harness/blob/main/CHANGELOG.md) first. Package metadata shared by every project (authors, licence,
+The two packages are versioned and released separately; name the file you push, since a
+`Appium.Harness.*` glob matches both. The `.snupkg` symbol package is produced alongside and pushed
+with it. Bump `<Version>` in the package's `.csproj` and add an entry to its changelog first —
+[`CHANGELOG.md`](https://github.com/pawel51/Appium.Harness/blob/main/CHANGELOG.md) for Appium.Harness,
+[`src/Appium.Harness.Maui/CHANGELOG.md`](https://github.com/pawel51/Appium.Harness/blob/main/src/Appium.Harness.Maui/CHANGELOG.md)
+for the MAUI package. Package metadata shared by every project (authors, licence,
 repository, Source Link) is in [`Directory.Build.props`](https://github.com/pawel51/Appium.Harness/blob/main/Directory.Build.props); set `CI=true` on a
 build server so paths in the PDB are normalised.
 

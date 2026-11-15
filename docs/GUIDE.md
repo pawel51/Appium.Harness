@@ -461,7 +461,7 @@ Ui.ExpectCount("search-result-.*", scroll: true).AtLeast(3);
 ```
 
 Text and counts work out of the box. **Colours and view-model values on a native screen need the app
-to publish them** — an accessibility tree does not carry them — which is what `TestProbe` does; see
+to publish them** — an accessibility tree does not carry them — which is what `TestProbe` from the [Appium.Harness.Maui](https://github.com/pawel51/Appium.Harness/blob/main/src/Appium.Harness.Maui/README.md) package does; see
 [Assertions](https://github.com/pawel51/Appium.Harness/blob/main/README.md#assertions) for the setup, the `scroll: true` caveat, and why it is test-build only.
 
 ---

@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- The platform TFMs are what an app consumes. Plain net10.0 is for the unit tests: there the
+         probe composes its payload but has no platform view to write it to. -->
+    <TargetFrameworks>net10.0;net10.0-android;net10.0-ios</TargetFrameworks>
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <RootNamespace>Appium.Harness.Maui</RootNamespace>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Makes the shared ProbePayload.cs internal here (see that file). -->
+    <DefineConstants>$(DefineConstants);APPIUM_HARNESS_MAUI</DefineConstants>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
+  </PropertyGroup>
+
+  <!-- NuGet packaging. Shared metadata (authors, licence, repository) is in Directory.Build.props. -->
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Appium.Harness.Maui</PackageId>
+    <Version>1.0.0</Version>
+    <Description>
+      The app-side half of Appium.Harness for .NET MAUI: TestProbe publishes chosen view
+      properties — a colour, a bound view-model value — into the platform accessibility tree, so
+      an Appium test can assert on them with Appium.Harness's HasTextColor and HasProperty. Off
+      unless the app opts in with UseTestProbes(), so a shipping build publishes nothing.
+    </Description>
+    <PackageTags>appium;maui;uitest;e2e;android;ios;accessibility;testing</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReleaseNotes>See src/Appium.Harness.Maui/CHANGELOG.md in the repository.</PackageReleaseNotes>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\LICENSE" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The wire format, compiled from the harness's own file rather than referenced: the app
+         must not take Appium.WebDriver as a dependency, and one file means the writer here and the
+         reader in Appium.Harness cannot drift. -->
+    <Compile Include="..\Appium.Harness\Probing\ProbePayload.cs" Link="ProbePayload.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Appium.Harness.Maui.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+  </ItemGroup>
+
+</Project>

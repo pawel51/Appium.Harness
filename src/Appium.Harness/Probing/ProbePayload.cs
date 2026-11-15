@@ -1,7 +1,11 @@
-// Dependency-free on purpose: an app under test can link-compile this one file
-// (<Compile Include="…/ProbePayload.cs" Link="…" />) so the app that writes the payload and the
-// harness that reads it share one implementation and cannot drift, without the app taking a
-// dependency on Appium. Keep it to the BCL — no Selenium, no Appium.
+// Dependency-free on purpose: Appium.Harness.Maui compiles this same file
+// (<Compile Include="…/ProbePayload.cs" Link="…" />), so the app side that writes the payload and
+// the harness that reads it share one implementation and cannot drift, without the app taking a
+// dependency on Appium. An app can link-compile it the same way. Keep it to the BCL — no Selenium,
+// no Appium.
+//
+// Public here, internal in Appium.Harness.Maui: a project that references both packages must not
+// see two copies of the same type.
 
 using System.Text;
 
@@ -17,7 +21,12 @@ namespace Appium.Harness;
 /// the harness reads them back out. The marker lets the payload share a field with a real
 /// accessibility label, and the escaping means a value can contain any character.</para>
 /// </summary>
-public static class ProbePayload
+#if APPIUM_HARNESS_MAUI
+internal
+#else
+public
+#endif
+static class ProbePayload
 {
     private const string Open = "[[probe:";
     private const string Close = "]]";
@@ -168,7 +177,12 @@ public static class ProbePayload
 /// Property names with a defined meaning to both the app that publishes and the harness that reads.
 /// They are MAUI's own property names, so <c>TestProbe.Properties="TextColor"</c> reads naturally.
 /// </summary>
-public static class ProbeProperties
+#if APPIUM_HARNESS_MAUI
+internal
+#else
+public
+#endif
+static class ProbeProperties
 {
     /// <summary>A view's text colour.</summary>
     public const string TextColor = "TextColor";

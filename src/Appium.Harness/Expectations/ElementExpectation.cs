@@ -200,7 +200,7 @@ public sealed class ElementExpectation
         // 'available' separates "there is a value to judge" from "the judgement": a colour or
         // property the app never published has nothing to compare, so it satisfies neither
         // polarity. Without this, Not.HasTextColor(...) would pass on a typo'd property name, or
-        // on a build with TestProbe compiled out - the silent pass a negation invites.
+        // on a build that never enabled TestProbe - the silent pass a negation invites.
         var result = Retry.Until(
             read,
             value => (available?.Invoke(value) ?? true) && pass(value) != _negated,

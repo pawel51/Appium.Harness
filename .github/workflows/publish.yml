@@ -1,0 +1,100 @@
+name: Publish
+
+# Publishes one package per tag, through nuget.org Trusted Publishing (no stored API key):
+#
+#   v2.0.1        -> Appium.Harness 2.0.1
+#   maui-v1.0.1   -> Appium.Harness.Maui 1.0.1
+#
+# The tag must equal v<Version> from that package's .csproj, or the run stops before packing.
+# nuget.org trusts this file by name: renaming it breaks publishing until the policy is updated.
+
+on:
+  push:
+    tags: ['v*', 'maui-v*']
+
+permissions:
+  contents: read
+
+jobs:
+  harness:
+    if: startsWith(github.ref_name, 'v')
+    runs-on: ubuntu-latest
+    environment: nuget
+    permissions:
+      contents: read
+      id-token: write # exchanged by NuGet/login for a short-lived nuget.org key
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Tag matches <Version>
+        run: |
+          version=$(dotnet msbuild src/Appium.Harness -getProperty:Version)
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match <Version>$version</Version> in Appium.Harness.csproj"
+            exit 1
+          fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      # The harness tests need no MAUI workload, so this job runs on Linux.
+      - run: dotnet test tests/Appium.Harness.Tests -c Release
+      - run: dotnet pack src/Appium.Harness -c Release -o artifacts
+
+      - uses: NuGet/login@v1
+        id: login
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
+      - run: >
+          dotnet nuget push "artifacts/Appium.Harness.$VERSION.nupkg"
+          --api-key "${{ steps.login.outputs.NUGET_API_KEY }}"
+          --source https://api.nuget.org/v3/index.json
+          --skip-duplicate
+
+  maui:
+    if: startsWith(github.ref_name, 'maui-v')
+    # The iOS target needs Xcode, so macOS. MAUI 10 builds against the iOS 26 SDK (Xcode 26).
+    runs-on: macos-26
+    environment: nuget
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - run: dotnet workload install maui-android maui-ios
+
+      - name: Tag matches <Version>
+        run: |
+          version=$(dotnet msbuild src/Appium.Harness.Maui -getProperty:Version)
+          if [ "maui-v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match <Version>$version</Version> in Appium.Harness.Maui.csproj"
+            exit 1
+          fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      # Both suites: the payload format is shared, so a MAUI release must not break the reader.
+      - run: dotnet test Appium.Harness.sln -c Release
+      - run: dotnet pack src/Appium.Harness.Maui -c Release -o artifacts
+
+      - uses: NuGet/login@v1
+        id: login
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
+      - run: >
+          dotnet nuget push "artifacts/Appium.Harness.Maui.$VERSION.nupkg"
+          --api-key "${{ steps.login.outputs.NUGET_API_KEY }}"
+          --source https://api.nuget.org/v3/index.json
+          --skip-duplicate

@@ -85,6 +85,8 @@ A harness change that alters behaviour on a device needs a run there, not just g
 - Every public member has an XML doc comment (`GenerateDocumentationFile` + warnings-as-errors
   enforces it). Comments explain *why* — the platform quirk, the failure it prevents.
 - README links are absolute GitHub URLs on purpose: nuget.org cannot resolve relative ones.
+- Releases are tag-driven through `.github/workflows/publish.yml` (Trusted Publishing); the steps
+  are in `docs/RELEASING.md`. Renaming the workflow file breaks the nuget.org policy.
 
 ## Consumers
 

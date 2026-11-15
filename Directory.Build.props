@@ -1,0 +1,33 @@
+<Project>
+
+  <!-- Shared by every project in this solution. Package metadata lives here rather than in the
+       library's csproj so the test project inherits the same language settings without having
+       to repeat them, and so the csproj stays about what is in the package. -->
+
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Authors>vtome</Authors>
+    <Copyright>Copyright (c) 2026 vtome</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/pawel51/Appium.Harness</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/pawel51/Appium.Harness</PackageProjectUrl>
+  </PropertyGroup>
+
+  <!-- Reproducible, debuggable packages. Source Link ships with the .NET 8+ SDK, so these
+       properties are all it takes. ContinuousIntegrationBuild normalises paths in the PDB and
+       must stay off locally, or the debugger cannot find the sources on your own machine. -->
+  <PropertyGroup>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true' Or '$(TF_BUILD)' == 'true' Or '$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+</Project>

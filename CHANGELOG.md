@@ -1,0 +1,48 @@
+# Changelog
+
+All notable changes to this package. The format follows
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the version numbers follow
+[Semantic Versioning](https://semver.org/).
+
+## [2.0.0] — 2026-11-15
+
+Moved into a standalone solution (`Appium.Harness/`) with its own `src/`, `tests/`, README and
+MIT licence, and reorganised by concern. One namespace, as before — a `using Appium.Harness;`
+still reaches every public type.
+
+### Breaking
+
+- **`WebUi.LearnerId` is removed.** It read an app-specific attribute (`data-learner-id`). Read
+  any attribute the app publishes on its root with the new `WebUi.RootAttribute(name)`:
+  `web.RootAttribute("data-learner-id") ?? ""`.
+
+### Added
+
+- `WebUiOptions.TestIdAttribute`, `AppStateAttribute`, `ReadyState` and `RouteAttribute`, so the
+  page contract no longer has to be `data-testid` / `data-app-state="ready"` / `data-route`. The
+  defaults are unchanged.
+- `WebUi.RootAttribute(string)`.
+- Source Link, deterministic builds, the licence file packed into the `.nupkg`.
+
+### Changed
+
+- `UiDriver.WaitOrNull`, `WaitPresent`, `WaitUntilText` and `WaitByText` with a zero timeout now
+  look once instead of not at all, matching `Expect(...)`. All waits in both layers go through one
+  polling primitive, so the last sleep is cut short at the deadline rather than overrunning it by
+  up to one poll interval.
+- A failed web screenshot now logs as `[web] screenshot '<name>' failed: …`, the same shape as the
+  native one.
+- The "no webview context" error no longer names an AlohaAI-specific build property.
+
+### Internal
+
+- `UiDriver` is split into partial files by concern (interaction, gestures, assertions, webview),
+  with the platform branching moved into `NativeLocators`, `NativeState` and `NativeGestures`.
+- Copies of the screenshot capture, toggle/enabled parsing, simple-id stripping, poll loops and
+  web failure diagnostics are each reduced to one.
+- Capability building is separated from opening the session, and covered by tests.
+
+## [1.1.0]
+
+Waiting assertions (`Expect`, `ExpectCount`), `HarnessColor`, the probe payload, and failure
+screenshots.

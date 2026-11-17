@@ -12,7 +12,7 @@
   <PropertyGroup>
     <IsPackable>true</IsPackable>
     <PackageId>Appium.Harness</PackageId>
-    <Version>3.0.0</Version>
+    <Version>2.2.0</Version>
     <Description>
       A test-framework-agnostic helper layer over Appium for .NET MAUI (and other mobile) UI
       tests: element lookup by automation id, resilient waits, precise no-fling gestures,

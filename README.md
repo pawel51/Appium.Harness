@@ -436,7 +436,7 @@ dotnet add package Appium.Harness
 Targets `net8.0` and `net10.0`. Proven against Appium **3.6.0**,
 [uiautomator2](https://github.com/appium/appium-uiautomator2-driver) **8.2.2**,
 [xcuitest](https://github.com/appium/appium-xcuitest-driver) **12.2.0**, `Appium.WebDriver`
-**5.0.0**. Since 3.0.0 it is built against `Appium.WebDriver` **8.0.1** and
+**5.0.0**. Since 2.2.0 it is built against `Appium.WebDriver` **8.0.1** and
 `Selenium.WebDriver` **4.40.0**.
 
 ---

@@ -4,13 +4,13 @@ All notable changes to this package. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the version numbers follow
 [Semantic Versioning](https://semver.org/).
 
-## [3.0.0] — 2026-11-17
+## [2.2.0] — 2026-11-17
 
-### Breaking
+### Changed
 
 - **Appium.WebDriver 8.0.1** (from 5.0.0). The harness's own API is unchanged, but
   `UiDriver.Driver`, the `UiDriver` constructor and every method returning `AppiumElement` now
-  hand out Appium 8 types. Test code that calls the driver directly gets Appium's own breaking
+  hand out Appium 8 types, so test code that calls the driver directly picks up Appium's own
   changes from 6.x through 8.x — see the
   [Appium .NET client releases](https://github.com/appium/dotnet-client/releases). Consumers
   pinning Appium.WebDriver below 8.0.1 get a NuGet downgrade error. Selenium.WebDriver stays at

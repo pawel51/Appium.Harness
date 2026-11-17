@@ -12,7 +12,7 @@
   <PropertyGroup>
     <IsPackable>true</IsPackable>
     <PackageId>Appium.Harness</PackageId>
-    <Version>2.1.0</Version>
+    <Version>3.0.0</Version>
     <Description>
       A test-framework-agnostic helper layer over Appium for .NET MAUI (and other mobile) UI
       tests: element lookup by automation id, resilient waits, precise no-fling gestures,
@@ -45,10 +45,10 @@
          no *test framework*, which Selenium is not.
 
          Selenium.WebDriver is declared explicitly rather than taken transitively because
-         WebUi is built on IWebDriver and it should be honest about that. Appium.WebDriver 5.0.0
-         only asks for Selenium.WebDriver 4.21.0 or later; this raises the floor to 4.40.0 so
+         WebUi is built on IWebDriver and it should be honest about that. Appium.WebDriver 8.0.1
+         only asks for Selenium.WebDriver 4.35.0 or later; this raises the floor to 4.40.0 so
          consumers get the current Selenium without having to reference it themselves. -->
-    <PackageReference Include="Appium.WebDriver" Version="5.0.0" />
+    <PackageReference Include="Appium.WebDriver" Version="8.0.1" />
     <PackageReference Include="Selenium.WebDriver" Version="4.40.0" />
   </ItemGroup>
 

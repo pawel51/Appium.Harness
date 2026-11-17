@@ -52,8 +52,9 @@ public sealed class WebViewContext : IDisposable
     /// </summary>
     /// <param name="ui">The live native session.</param>
     /// <param name="expectedUrlPrefix">
-    /// Base URL of the embedded app. Used to pick the right window when more than one is
-    /// exposed — a MAUI app can present several, and the wrong one yields an empty document.
+    /// Base URL of the embedded app. Used to pick the right window — a MAUI app can present
+    /// several, and the wrong one yields an empty document. Checked even when only one window
+    /// is exposed, so the session is always switched onto a window explicitly.
     /// </param>
     /// <param name="packageHint">
     /// Android names contexts by package (<c>WEBVIEW_com.example.app</c>); iOS names
@@ -141,11 +142,10 @@ public sealed class WebViewContext : IDisposable
     {
         try
         {
-            var handles = driver.WindowHandles;
-            if (handles.Count <= 1 || expectedUrlPrefix is not { Length: > 0 })
+            if (expectedUrlPrefix is not { Length: > 0 })
                 return;
 
-            foreach (var handle in handles)
+            foreach (var handle in driver.WindowHandles)
             {
                 driver.SwitchTo().Window(handle);
                 if (driver.Url.StartsWith(expectedUrlPrefix, StringComparison.OrdinalIgnoreCase))

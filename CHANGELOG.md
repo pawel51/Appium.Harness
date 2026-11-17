@@ -4,6 +4,18 @@ All notable changes to this package. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the version numbers follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.1.0] — 2026-11-17
+
+### Changed
+
+- **Selenium.WebDriver 4.40.0** (from 4.21.0). Appium.WebDriver stays at 5.0.0, which accepts it.
+  A consumer that pins an older Selenium.WebDriver now gets a NuGet downgrade error and should
+  drop the pin or raise it to 4.40.0.
+- `WebViewContext.Enter` now selects the window matching the expected URL prefix even
+  when the webview context reports a single window handle. Previously a single handle was taken
+  as already selected and never switched to, so the session could stay on no window — or on a
+  stale one — after the context switch; the expected URL is now checked and logged every time.
+
 ## [2.0.0] — 2026-11-15
 
 Moved into a standalone solution (`Appium.Harness/`) with its own `src/`, `tests/`, README and
